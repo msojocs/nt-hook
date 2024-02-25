@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "lib": [
+      "es2020"
+    ],
+    "experimentalDecorators": true,
+    "module": "NodeNext",
+    "allowJs": false,
+    "noEmit": false,
+    "esModuleInterop": false,
+    "moduleResolution": "nodenext",
+    "strict": true,
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "baseUrl": "./",
+    "paths": {
+    }
+  },
+  "include": [
+    "agent/**/*.ts"
+  ]
+}

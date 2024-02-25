@@ -1,0 +1,21 @@
+{
+  "name": "frida-agent-example",
+  "version": "1.0.0",
+  "description": "Example Frida agent written in TypeScript",
+  "private": true,
+  "main": "agent/index.ts",
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "frida-compile agent/index.ts -o _agent.js -c",
+    "watch": "frida-compile agent/index.ts -o _agent.js -w",
+    "hook-wcc": "node wcc.js > output.log",
+    "hook-py": "python -u wcc.py > output.log"
+  },
+  "devDependencies": {
+    "@types/frida-gum": "^18.3.2",
+    "@types/node": "^20.3.1",
+    "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-plugin-import": "^2.27.5",
+    "frida-compile": "^16.3.0"
+  }
+}
