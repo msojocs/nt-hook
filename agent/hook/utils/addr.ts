@@ -4,7 +4,7 @@ export default class BaseAddr {
     private baseAddr
     private type: 'wrapper'
     private idaBaseMap: Record<'wrapper', string> = {
-        wrapper: '0x000C00'
+        wrapper: '0x000000'
     }
     constructor(type: 'wrapper', baseAddr: NativePointer) {
         this.baseAddr = baseAddr

@@ -8,7 +8,9 @@ QQ_PID = None
 # 要hook的 -> ['C:\\Program Files (x86)\\Tencent\\QQ\\Bin\\QQ.exe', '/hosthwnd=2164594', '/hostname=QQ_IPC_{12345678-ABCD-12EF-9976-18373DEAB821}', '/memoryid=0', 'C:\\Program Files (x86)\\Tencent\\QQ\\Bin\\QQ.exe']
 for pid in psutil.pids():
     p = psutil.Process(pid)
-    if p.name() == "QQ.exe" and len(p.cmdline()) > 1:
+    # QQ.exe and len(p.cmdline()) > 1
+    if p.name() == "qq" :
+        print(p.cmdline())
         QQ_PID = pid
         del p
         break
