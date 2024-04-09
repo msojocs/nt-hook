@@ -8,8 +8,9 @@
     "prepare": "npm run build",
     "build": "frida-compile agent/index.ts -o _agent.js -c",
     "watch": "frida-compile agent/index.ts -o _agent.js -w",
-    "hook-wcc": "node wcc.js > output.log",
-    "hook-py": "python3 -u wcc.py > output.log"
+    "hook-nt": "node nt.js > output.log",
+    "hook-py": "python -u nt.py",
+    "hook-py-log": "python -u nt.py > output.log"
   },
   "devDependencies": {
     "@types/frida-gum": "^18.3.2",

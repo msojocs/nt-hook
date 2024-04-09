@@ -2,7 +2,7 @@ const { spawn, spawnSync, exec, execSync } = require("child_process");
 const fs = require('fs');
 (async () => {
     console.log('start')
-    const hookTask = spawn('python', ['-u', ".\\wcc.py"], {
+    const hookTask = spawn('python', ['-u', ".\\nt.py"], {
         
     })
     // const f = fs.openSync('output.log', 'w')

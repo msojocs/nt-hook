@@ -1,7 +1,7 @@
 import { StdString } from "../../cpp/std_string.js";
 import BaseAddr from "../utils/addr.js";
 
-export const hookDB = (baseAddr: BaseAddr) => {
+export const hookDBWin32 = (baseAddr: BaseAddr) => {
   {
     const target = 'db info'
     const targetAddr = baseAddr.resolveAddress('0x0324CC00')

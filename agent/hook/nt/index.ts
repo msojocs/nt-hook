@@ -1,11 +1,11 @@
 import BaseAddr from "../utils/addr.js"
-import { hookCommon } from "./common.js"
+import { hookLog } from "./log-win32.js"
 import { hookDBLinux } from "./db-linux.js"
-import { hookDB } from "./db.js"
+import { hookDBWin32 } from "./db-win32.js"
 import { hookSql } from "./sql-linux.js"
 
 export const hookNt = (baseAddr: BaseAddr) => {
-    // hookCommon(baseAddr)
-    hookDBLinux(baseAddr)
+    hookLog(baseAddr)
+    // hookDBLinux(baseAddr)
     // hookSql(baseAddr)
 }

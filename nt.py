@@ -2,14 +2,15 @@ import sys
 import frida
 import psutil
 
-
+PROCESS_NAME = "QQ.exe"
+# qq
 QQ_PID = None
 # GUI -> ['C:\\Program Files (x86)\\Tencent\\QQ\\Bin\\QQ.exe']
 # 要hook的 -> ['C:\\Program Files (x86)\\Tencent\\QQ\\Bin\\QQ.exe', '/hosthwnd=2164594', '/hostname=QQ_IPC_{12345678-ABCD-12EF-9976-18373DEAB821}', '/memoryid=0', 'C:\\Program Files (x86)\\Tencent\\QQ\\Bin\\QQ.exe']
 for pid in psutil.pids():
     p = psutil.Process(pid)
     # QQ.exe and len(p.cmdline()) > 1
-    if p.name() == "qq" :
+    if p.name() == PROCESS_NAME and len(p.cmdline()) == 1:
         print(p.cmdline())
         QQ_PID = pid
         del p
@@ -70,6 +71,7 @@ def on_destroyed():
 
 if __name__ == '__main__':
     jscode = open('_agent.js', 'r',encoding='utf-8').read()
+    print("attach")
     process = frida.attach(QQ_PID)
     script = process.create_script(jscode)
     script.on('message', on_message)
