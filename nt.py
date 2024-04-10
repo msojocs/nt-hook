@@ -10,7 +10,8 @@ QQ_PID = None
 for pid in psutil.pids():
     p = psutil.Process(pid)
     # QQ.exe and len(p.cmdline()) > 1
-    if p.name() == PROCESS_NAME and len(p.cmdline()) == 1:
+    # and len(p.cmdline()) == 1
+    if p.name() == PROCESS_NAME :
         print(p.cmdline())
         QQ_PID = pid
         del p
