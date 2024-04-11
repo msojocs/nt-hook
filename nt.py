@@ -7,15 +7,21 @@ PROCESS_NAME = "QQ.exe"
 QQ_PID = None
 # GUI -> ['C:\\Program Files (x86)\\Tencent\\QQ\\Bin\\QQ.exe']
 # 要hook的 -> ['C:\\Program Files (x86)\\Tencent\\QQ\\Bin\\QQ.exe', '/hosthwnd=2164594', '/hostname=QQ_IPC_{12345678-ABCD-12EF-9976-18373DEAB821}', '/memoryid=0', 'C:\\Program Files (x86)\\Tencent\\QQ\\Bin\\QQ.exe']
+
+process_list = []
 for pid in psutil.pids():
     p = psutil.Process(pid)
     # QQ.exe and len(p.cmdline()) > 1
     # and len(p.cmdline()) == 1
     if p.name() == PROCESS_NAME :
         print(p.cmdline())
-        QQ_PID = pid
+        process_list.append(p)
         del p
         break
+
+print("QQ pids count:", len(process_list))
+if len(process_list) == 1:
+    QQ_PID = process_list[0].pid
 
 if QQ_PID is None:
     print("QQ not launched. exit.")
