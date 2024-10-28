@@ -1,4 +1,4 @@
-const { spawn, spawnSync, exec, execSync } = require("child_process");
+const { spawn } = require("child_process");
 const fs = require('fs');
 (async () => {
     console.log('start')

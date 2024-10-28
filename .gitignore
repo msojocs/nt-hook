@@ -1,5 +1,5 @@
 /_agent.js
 /node_modules
-output.log
+output*.log
 res
 tmp

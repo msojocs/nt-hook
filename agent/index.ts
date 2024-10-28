@@ -8,7 +8,7 @@ import { readMap } from "./utils/map.js"
     const moduleName = 'wrapper.node'
     const _baseAddr = Module.findBaseAddress(moduleName);
     if (_baseAddr == null)
-        throw new Error('baseAddr error!')
+        throw new Error(`baseAddr error! ${moduleName}`)
     console.log('base addr:', _baseAddr)
     const baseAddr = new BaseAddr(type, _baseAddr)
     console.log('start hook')

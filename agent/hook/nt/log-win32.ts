@@ -1,7 +1,462 @@
+import { useLogger } from "../../utils/log.js";
 import { StdString } from "../../cpp/std_string.js";
 import BaseAddr from "../utils/addr.js";
 
+class VSprintf {
+    private format: string
+    private argList: NativePointer
+    constructor(format: string, argList: NativePointer)
+    {
+        this.argList = argList
+        this.format = format
+    }
+    toString()
+    {
+        const handle = [
+            {
+                exp: 'd',
+                handle: (argIndex: number) => {
+                    const arg = this.argList.add(argIndex * 8)
+                    return arg.readInt()
+                }
+            },
+            {
+                exp: '02d',
+                handle: (argIndex: number) => {
+                    const arg = this.argList.add(argIndex * 8)
+                    return arg.readInt()
+                }
+            },
+            {
+                exp: '05d',
+                handle: (argIndex: number) => {
+                    const arg = this.argList.add(argIndex * 8)
+                    return arg.readInt()
+                }
+            },
+            {
+                exp: 'lld',
+                handle: (argIndex: number) => {
+                    const arg = this.argList.add(argIndex * 8)
+                    return arg.readLong()
+                }
+            },
+            {
+                exp: '+.1f',
+                handle: (argIndex: number) => {
+                    const arg = this.argList.add(argIndex * 8)
+                    return arg.readFloat()
+                }
+            },
+            {
+                exp: 's',
+                handle: (argIndex: number) => {
+                    const arg = this.argList.add(argIndex * 8)
+                    // console.log(arg.readPointer().readByteArray(16))
+                    return arg.readPointer().readUtf8String()
+                }
+            },
+        ]
+        let result = ''
+        let argIndex = 0
+        for(let i=0; i < this.format.length; i++)
+        {
+            if (this.format[i] === '%')
+            {
+                // 表达式
+                const subFormat = this.format.substring(i + 1)
+                const h = handle.find(e => subFormat.startsWith(e.exp))
+                if (h)
+                {
+                    result += h.handle(argIndex)
+                    i += h.exp.length
+                }
+                argIndex++
+            }
+            else
+            {
+                // 非表达式
+                result += this.format[i]
+            }
+        }
+        return result
+    }
+}
+
 export const hookLog = (baseAddr: BaseAddr) => {
+    {
+      const targetAddr = baseAddr.resolveAddress('0x035BC858')
+      if (targetAddr != null) {
+        const log = useLogger('vsprintf')
+        Interceptor.attach(targetAddr, { // Intercept calls to our SetAesDecrypt function
+  
+          // When function is called, print out its parameters
+          /*
+          以下内容演示了
+          1. 怎么提取 printf 的第一个参数的字符串
+          2. 怎么结合 onLever 做进入函数的时候获取 该函数要操作的内存和长度 ，等函数工作完毕，提取该数据
+          其他API 用法
+          https://frida.re/docs/javascript-api/
+          */
+          onEnter: function (args) {
+            try {
+                log.info(`onEnter`);
+                log.info('[+] Called targetAddr:' + targetAddr);
+                const format = args[3].readUtf8String()
+                if (format && !format.startsWith('%d-%02d-%02d'))
+                {
+                    log.info('write target:', args[0])
+                    args[0] = ptr('1')
+                    log.info(args[1].readPointer().readByteArray(args[2].toInt32()))
+                    log.info(args[2].toInt32())
+                    log.info(args[3].readUtf8String())
+                    log.info(args[5].readByteArray(16))
+                
+                    const printf = new VSprintf(format, args[5])
+                    log.info(printf.toString())
+                }
+            }
+            catch (error) {
+              log.info('error:', error)
+            }
+  
+            /*
+            dumpAddr('Input', args[0], args[3].toInt32());
+            this.outptr = args[1]; // Store arg2 and arg3 in order to see when we leave the function
+            this.outsize = args[2].toInt32();
+            */
+          },
+  
+          // When function is finished
+          onLeave: function (retval) {
+            /*
+            dumpAddr('Output', this.outptr, this.outsize); // Print out data array, which will contain de/encrypted data as output
+            log.info('[+] Returned from SomeFunc: ' + retval);
+            */
+            log.info('retval:', retval)
+            log.info(`onLeave\n\n`);
+          }
+        });
+      }
+    }
+    {
+      const targetAddr = baseAddr.resolveAddress('0x035BCAAC')
+      if (targetAddr != null) {
+        const log = useLogger('vsprintf_s')
+        Interceptor.attach(targetAddr, { // Intercept calls to our SetAesDecrypt function
+  
+          // When function is called, print out its parameters
+          /*
+          以下内容演示了
+          1. 怎么提取 printf 的第一个参数的字符串
+          2. 怎么结合 onLever 做进入函数的时候获取 该函数要操作的内存和长度 ，等函数工作完毕，提取该数据
+          其他API 用法
+          https://frida.re/docs/javascript-api/
+          */
+          onEnter: function (args) {
+            try {
+                log.info(`onEnter`);
+                log.info('[+] Called targetAddr:' + targetAddr);
+                const format = args[3].readUtf8String()
+                if (format && !format.startsWith('%d-%02d-%02d'))
+                {
+                    log.info('write target:', args[0])
+                    // args[0] = new NativePointer(0x1)
+                    log.info(args[1].readPointer().readByteArray(args[2].toInt32()))
+                    log.info(args[2].toInt32())
+                    log.info(args[3].readUtf8String())
+                    log.info(args[5].readByteArray(16))
+                
+                    const printf = new VSprintf(format, args[5])
+                    log.info(printf.toString())
+                }
+            }
+            catch (error) {
+              log.info('error:', error)
+            }
+  
+            /*
+            dumpAddr('Input', args[0], args[3].toInt32());
+            this.outptr = args[1]; // Store arg2 and arg3 in order to see when we leave the function
+            this.outsize = args[2].toInt32();
+            */
+          },
+  
+          // When function is finished
+          onLeave: function (retval) {
+            /*
+            dumpAddr('Output', this.outptr, this.outsize); // Print out data array, which will contain de/encrypted data as output
+            log.info('[+] Returned from SomeFunc: ' + retval);
+            */
+            log.info('retval:', retval)
+            log.info(`onLeave\n\n`);
+          }
+        });
+      }
+    }
+    {
+      const targetAddr = baseAddr.resolveAddress('0x035BCBC0')
+      if (targetAddr != null) {
+        const log = useLogger('vsnprintf_s')
+        Interceptor.attach(targetAddr, { // Intercept calls to our SetAesDecrypt function
+  
+          // When function is called, print out its parameters
+          /*
+          以下内容演示了
+          1. 怎么提取 printf 的第一个参数的字符串
+          2. 怎么结合 onLever 做进入函数的时候获取 该函数要操作的内存和长度 ，等函数工作完毕，提取该数据
+          其他API 用法
+          https://frida.re/docs/javascript-api/
+          */
+          onEnter: function (args) {
+            try {
+                log.info(`onEnter`);
+                log.info('[+] Called targetAddr:' + targetAddr);
+                const format = args[3].readUtf8String()
+                if (format && !format.startsWith('%d-%02d-%02d'))
+                {
+                    log.info('write target:', args[0])
+                    // args[0] = new NativePointer(0x1)
+                    log.info(args[1].readPointer().readByteArray(args[2].toInt32()))
+                    log.info(args[2].toInt32())
+                    log.info(args[3].readUtf8String())
+                    log.info(args[5].readByteArray(16))
+                
+                    const printf = new VSprintf(format, args[5])
+                    log.info(printf.toString())
+                }
+            }
+            catch (error) {
+              log.info('error:', error)
+            }
+  
+            /*
+            dumpAddr('Input', args[0], args[3].toInt32());
+            this.outptr = args[1]; // Store arg2 and arg3 in order to see when we leave the function
+            this.outsize = args[2].toInt32();
+            */
+          },
+  
+          // When function is finished
+          onLeave: function (retval) {
+            /*
+            dumpAddr('Output', this.outptr, this.outsize); // Print out data array, which will contain de/encrypted data as output
+            log.info('[+] Returned from SomeFunc: ' + retval);
+            */
+            log.info('retval:', retval)
+            log.info(`onLeave\n\n`);
+          }
+        });
+      }
+    }
+    {
+      const targetAddr = baseAddr.resolveAddress('0x035BC1E8')
+      if (targetAddr != null) {
+        const log = useLogger('vswprintf')
+        Interceptor.attach(targetAddr, { // Intercept calls to our SetAesDecrypt function
+  
+          // When function is called, print out its parameters
+          /*
+          以下内容演示了
+          1. 怎么提取 printf 的第一个参数的字符串
+          2. 怎么结合 onLever 做进入函数的时候获取 该函数要操作的内存和长度 ，等函数工作完毕，提取该数据
+          其他API 用法
+          https://frida.re/docs/javascript-api/
+          */
+          onEnter: function (args) {
+            try {
+                log.info(`onEnter`);
+                log.info('[+] Called targetAddr:' + targetAddr);
+                const format = args[3].readUtf8String()
+                if (format && !format.startsWith('%d-%02d-%02d'))
+                {
+                    log.info('write target:', args[0])
+                    // args[0] = new NativePointer(0x1)
+                    log.info(args[1].readPointer().readByteArray(args[2].toInt32()))
+                    log.info(args[2].toInt32())
+                    log.info(args[3].readUtf8String())
+                    log.info(args[5].readByteArray(16))
+                
+                    const printf = new VSprintf(format, args[5])
+                    log.info(printf.toString())
+                }
+            }
+            catch (error) {
+              log.info('error:', error)
+            }
+  
+            /*
+            dumpAddr('Input', args[0], args[3].toInt32());
+            this.outptr = args[1]; // Store arg2 and arg3 in order to see when we leave the function
+            this.outsize = args[2].toInt32();
+            */
+          },
+  
+          // When function is finished
+          onLeave: function (retval) {
+            /*
+            dumpAddr('Output', this.outptr, this.outsize); // Print out data array, which will contain de/encrypted data as output
+            log.info('[+] Returned from SomeFunc: ' + retval);
+            */
+            log.info('retval:', retval)
+            log.info(`onLeave\n\n`);
+          }
+        });
+      }
+    }
+    {
+      const targetAddr = baseAddr.resolveAddress('0x035BC444')
+      if (targetAddr != null) {
+        const log = useLogger('vswprintf_s')
+        Interceptor.attach(targetAddr, { // Intercept calls to our SetAesDecrypt function
+  
+          // When function is called, print out its parameters
+          /*
+          以下内容演示了
+          1. 怎么提取 printf 的第一个参数的字符串
+          2. 怎么结合 onLever 做进入函数的时候获取 该函数要操作的内存和长度 ，等函数工作完毕，提取该数据
+          其他API 用法
+          https://frida.re/docs/javascript-api/
+          */
+          onEnter: function (args) {
+            try {
+                log.info(`onEnter`);
+                log.info('[+] Called targetAddr:' + targetAddr);
+                const format = args[3].readUtf8String()
+                if (format && !format.startsWith('%d-%02d-%02d'))
+                {
+                    log.info('write target:', args[0])
+                    // args[0] = new NativePointer(0x1)
+                    log.info(args[1].readPointer().readByteArray(args[2].toInt32()))
+                    log.info(args[2].toInt32())
+                    log.info(args[3].readUtf8String())
+                    log.info(args[5].readByteArray(16))
+                
+                    const printf = new VSprintf(format, args[5])
+                    log.info(printf.toString())
+                }
+            }
+            catch (error) {
+              log.info('error:', error)
+            }
+  
+            /*
+            dumpAddr('Input', args[0], args[3].toInt32());
+            this.outptr = args[1]; // Store arg2 and arg3 in order to see when we leave the function
+            this.outsize = args[2].toInt32();
+            */
+          },
+  
+          // When function is finished
+          onLeave: function (retval) {
+            /*
+            dumpAddr('Output', this.outptr, this.outsize); // Print out data array, which will contain de/encrypted data as output
+            log.info('[+] Returned from SomeFunc: ' + retval);
+            */
+            log.info('retval:', retval)
+            log.info(`onLeave\n\n`);
+          }
+        });
+      }
+    }
+    {
+      const targetAddr = baseAddr.resolveAddress('0x035BC558')
+      if (targetAddr != null) {
+        const log = useLogger('vsnwprintf_s')
+        Interceptor.attach(targetAddr, { // Intercept calls to our SetAesDecrypt function
+  
+          // When function is called, print out its parameters
+          /*
+          以下内容演示了
+          1. 怎么提取 printf 的第一个参数的字符串
+          2. 怎么结合 onLever 做进入函数的时候获取 该函数要操作的内存和长度 ，等函数工作完毕，提取该数据
+          其他API 用法
+          https://frida.re/docs/javascript-api/
+          */
+          onEnter: function (args) {
+            try {
+                log.info(`onEnter`);
+                log.info('[+] Called targetAddr:' + targetAddr);
+                const format = args[3].readUtf8String()
+                if (format && !format.startsWith('%d-%02d-%02d'))
+                {
+                    log.info('write target:', args[0])
+                    // args[0] = new NativePointer(0x1)
+                    log.info(args[1].readPointer().readByteArray(args[2].toInt32()))
+                    log.info(args[2].toInt32())
+                    log.info(args[3].readUtf8String())
+                    log.info(args[5].readByteArray(16))
+                
+                    const printf = new VSprintf(format, args[5])
+                    log.info(printf.toString())
+                }
+            }
+            catch (error) {
+              log.info('error:', error)
+            }
+  
+            /*
+            dumpAddr('Input', args[0], args[3].toInt32());
+            this.outptr = args[1]; // Store arg2 and arg3 in order to see when we leave the function
+            this.outsize = args[2].toInt32();
+            */
+          },
+  
+          // When function is finished
+          onLeave: function (retval) {
+            /*
+            dumpAddr('Output', this.outptr, this.outsize); // Print out data array, which will contain de/encrypted data as output
+            log.info('[+] Returned from SomeFunc: ' + retval);
+            */
+            log.info('retval:', retval)
+            log.info(`onLeave\n\n`);
+          }
+        });
+      }
+    }
+    // {
+    //   const targetAddr = baseAddr.resolveAddress('0x002888DC')
+    //   if (targetAddr != null) {
+    //     const log = useLogger('output overwrite')
+    //     Interceptor.attach(targetAddr, { // Intercept calls to our SetAesDecrypt function
+  
+    //       // When function is called, print out its parameters
+    //       /*
+    //       以下内容演示了
+    //       1. 怎么提取 printf 的第一个参数的字符串
+    //       2. 怎么结合 onLever 做进入函数的时候获取 该函数要操作的内存和长度 ，等函数工作完毕，提取该数据
+    //       其他API 用法
+    //       https://frida.re/docs/javascript-api/
+    //       */
+    //       onEnter: function (args) {
+    //         try {
+    //             log.info(`onEnter`);
+    //             log.info('[+] Called targetAddr:' + targetAddr);
+    //         }
+    //         catch (error) {
+    //           log.info('error:', error)
+    //         }
+  
+    //         /*
+    //         dumpAddr('Input', args[0], args[3].toInt32());
+    //         this.outptr = args[1]; // Store arg2 and arg3 in order to see when we leave the function
+    //         this.outsize = args[2].toInt32();
+    //         */
+    //       },
+  
+    //       // When function is finished
+    //       onLeave: function (retval) {
+    //         /*
+    //         dumpAddr('Output', this.outptr, this.outsize); // Print out data array, which will contain de/encrypted data as output
+    //         log.info('[+] Returned from SomeFunc: ' + retval);
+    //         */
+    //         log.info('retval:', retval)
+    //         log.info(`onLeave\n\n`);
+    //         retval.replace(new NativePointer(0x1))
+    //       }
+    //     });
+    //   }
+    // }
     // {
     //     const target = 'forwardMsg'
     //     const targetAddr = baseAddr.resolveAddress('0x11FE480')
@@ -97,22 +552,23 @@ export const hookLog = (baseAddr: BaseAddr) => {
                         // console.log('[+] FormatString: ' + Memory.readAnsiString(args[0])); // Plaintext
                         // console.log('arg0:', readStdString(args[0]))
                         console.log('[+] Argv0: ', args[0])
-                        for (let i = 0; i < 4; i++) {
+                        
+                        for (let i = 0; i < 12; i++) {
                             const cur = args[i]
                             console.log(`a${i + 1} :`, cur)
                             try {
-                                console.log(`a${i + 1} str:`, cur.readUtf8String())
+                              console.log(`a${i + 1} int:`, cur.readInt())
+                                console.log(`a${i + 1} raw str:`, cur.readUtf8String())
 
-                            }catch{}
+                            }catch{
+                                // console.log('read str error')
+                            }
                             try {
                                 const ptr = cur.readPointer()
                                 console.log(`a${i + 1} ptr:`, ptr)
                                 console.log(`a${i + 1} str:`, ptr.readUtf8String())
                             } catch (error) {
-                                if (cur.toInt32() != 0) {
-                                    const a1 = cur.readInt()
-                                    console.log(`a${i + 1} try to read int:`, a1)
-                                }
+                                // console.log('read std::str error')
                             }
                             
                         }
@@ -142,8 +598,10 @@ export const hookLog = (baseAddr: BaseAddr) => {
         }
     }
     const logList = [
-        '0x035CC350',
-        '0x005BC310', // 00007FFAA3DFCF10
+        '0x01BD215D',
+        '0x0804f', // 00007FFAA3DFCF10
+        '0x00001471',
+        '0x0004BE56',
     ]
     for (const addr of logList) {
         logAdd(addr)

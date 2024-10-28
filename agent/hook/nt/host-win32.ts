@@ -36,6 +36,7 @@ export const hookHostsWin32 = (baseAddr: BaseAddr) => {
             console.log('a2:', a2)
             const domain = a2.readUtf8String()
             console.log('domain:', domain)
+            console.log('length:', a2.readByteArray(32))
 
             console.log('a3:', a3)
             console.log('type:', a3)
