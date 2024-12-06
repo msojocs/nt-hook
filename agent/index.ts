@@ -5,7 +5,7 @@ import { readMap } from "./utils/map.js"
 
 (() => {
     const type = 'wrapper'
-    const moduleName = 'wrapper.node'
+    const moduleName = 'wrapper-1.node'
     const _baseAddr = Module.findBaseAddress(moduleName);
     if (_baseAddr == null)
         throw new Error(`baseAddr error! ${moduleName}`)

@@ -6,12 +6,14 @@ import { hookSql } from "./sql-linux.js"
 import { hookHostsWin32 } from "./host-win32.js"
 import { hookOIDB } from "./oidb/oidb.js"
 import { hookMSF } from "./msf.js"
+import { hookSqlite3Step } from "./sqlite3_step.js"
 
 export const hookNt = (baseAddr: BaseAddr) => {
     hookLog(baseAddr)
     // hookHostsWin32(baseAddr)
     // hookDBLinux(baseAddr)
     // hookSql(baseAddr)
-    hookOIDB(baseAddr)
+    // hookOIDB(baseAddr)
     hookMSF(baseAddr)
+    // hookSqlite3Step(baseAddr)
 }

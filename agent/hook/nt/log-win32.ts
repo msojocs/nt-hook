@@ -52,7 +52,6 @@ class VSprintf {
                 exp: 's',
                 handle: (argIndex: number) => {
                     const arg = this.argList.add(argIndex * 8)
-                    // console.log(arg.readPointer().readByteArray(16))
                     return arg.readPointer().readUtf8String()
                 }
             },

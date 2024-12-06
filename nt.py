@@ -3,6 +3,7 @@ import frida
 import psutil
 
 PROCESS_NAME = "QQ.exe"
+print("PROCESS_NAME:", PROCESS_NAME)
 # qq
 QQ_PID = None
 # GUI -> ['C:\\Program Files (x86)\\Tencent\\QQ\\Bin\\QQ.exe']
@@ -10,14 +11,18 @@ QQ_PID = None
 
 process_list = []
 for pid in psutil.pids():
-    p = psutil.Process(pid)
-    # QQ.exe and len(p.cmdline()) > 1
-    # and len(p.cmdline()) == 1
-    if p.name() == PROCESS_NAME and len(p.cmdline()) == 1:
-        print(p.cmdline())
-        process_list.append(p)
-        del p
-        break
+    # print(pid)
+    try:
+        p = psutil.Process(pid)
+        # QQ.exe and len(p.cmdline()) > 1
+        # and len(p.cmdline()) == 1
+        if p.name() == PROCESS_NAME and len(p.cmdline()) == 1:
+            print(p.cmdline())
+            process_list.append(p)
+            del p
+            break
+    except Exception:
+        print('error next')
 
 print("QQ pids count:", len(process_list))
 if len(process_list) == 1:
