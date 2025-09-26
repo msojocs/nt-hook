@@ -10,7 +10,12 @@ class NTStr {
     return this.p.readU8() >> 1
   }
   get data() {
-    return this.p.add(1).readUtf8String()
+    if (this.len <= 15) {
+      return this.p.add(1).readUtf8String()
+    } else {
+      const ptr = this.p.add(2 * Process.pointerSize).readPointer()
+      return ptr.readUtf8String()
+    }
   }
   toString() {
     return `NTStr(len=${this.len}, data=${this.data})`
@@ -27,14 +32,14 @@ class MsfReqData {
   constructor(p: NativePointer) {
     this.p = p
   }
+  get cmd() {
+    return new NTStr(this.p.readPointer())
+  }
   get uin() {
     return new NTStr(this.p.add(7 * Process.pointerSize))
   }
   get seq() {
     return this.p.add(11 * Process.pointerSize).readInt()
-  }
-  get cmd() {
-    return new NTStr(this.p.readPointer())
   }
   get dataSize() {
     const v4 = this.p.readPointer()
