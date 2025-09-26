@@ -16,6 +16,7 @@ for pid in psutil.pids():
         p = psutil.Process(pid)
         # QQ.exe and len(p.cmdline()) > 1
         # and len(p.cmdline()) == 1
+        # 判断命令包含hosthwnd
         if p.name() == PROCESS_NAME and len(p.cmdline()) == 1:
             print(p.cmdline())
             process_list.append(p)
@@ -27,7 +28,7 @@ for pid in psutil.pids():
 print("QQ pids count:", len(process_list))
 if len(process_list) == 1:
     QQ_PID = process_list[0].pid
-# QQ_PID = 40360
+# QQ_PID = 41260
 if QQ_PID is None:
     print("QQ not launched. exit.")
     sys.exit(1)

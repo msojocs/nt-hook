@@ -5,8 +5,4 @@ import { hookNt as hookNt } from "./nt/index.js";
 export const hook = (baseAddr: BaseAddr) => {
     // hookCPP(baseAddr)
     hookNt(baseAddr)
-    // hookWcc(baseAddr)
-    // hookWcsc(baseAddr)
-    // hookWXSS(baseAddr)
-    // hookNight(baseAddr)
 }

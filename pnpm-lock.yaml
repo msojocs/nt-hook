@@ -9,8 +9,8 @@ importers:
   .:
     devDependencies:
       '@types/frida-gum':
-        specifier: ^18.3.2
-        version: 18.3.2
+        specifier: ^19.0.1
+        version: 19.0.1
       '@types/node':
         specifier: ^20.3.1
         version: 20.3.1
@@ -178,8 +178,8 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@types/frida-gum@18.3.2':
-    resolution: {integrity: sha512-bso8bJRxrhchNRrOMmT18st/THIdjzxFdcMtJ/gGSYSknJeerQ8ArBwBtlWt/f3pqVVs1Mz1Fg6lvUdjXswa+g==}
+  '@types/frida-gum@19.0.1':
+    resolution: {integrity: sha512-mp8BpWWkQFJH86ZN5uXZuDiA7KY/+jDknrw0a06x0/+F5ucPwctHrCuV6iT+LLCp/GyICc36ssedF33B1WoLsw==}
 
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
@@ -413,6 +413,7 @@ packages:
   eslint@8.43.0:
     resolution: {integrity: sha512-aaCpf2JqqKesMFGgmRPessmVKjcGXqdlAYLLC3THM8t5nBRZRQ+st5WM/hoJXkdioEXLLbXgclUpM0TXo5HX5Q==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
 
   espree@9.5.2:
@@ -1033,7 +1034,7 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.15.0
 
-  '@types/frida-gum@18.3.2': {}
+  '@types/frida-gum@19.0.1': {}
 
   '@types/json5@0.0.29': {}
 

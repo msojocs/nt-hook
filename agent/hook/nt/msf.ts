@@ -1,10 +1,25 @@
 import BaseAddr from "../utils/addr.js";
 import { useLogger } from "../../utils/log.js";
 
+class NTStr {
+  private p: NativePointer
+  constructor(p: NativePointer) {
+    this.p = p
+  }
+  get len() {
+    return this.p.readU8() >> 1
+  }
+  get data() {
+    return this.p.add(1).readUtf8String()
+  }
+  toString() {
+    return `NTStr(len=${this.len}, data=${this.data})`
+  }
+}
 /**
  * 大小：208
  */
-class MsfParse {
+class MsfReqData {
   /**
    * *v42
    */
@@ -13,14 +28,13 @@ class MsfParse {
     this.p = p
   }
   get uin() {
-    return this.p.add(4 * Process.pointerSize).readUtf8String()
+    return new NTStr(this.p.add(7 * Process.pointerSize))
   }
   get seq() {
-    return this.p.add(8 * Process.pointerSize).readInt()
+    return this.p.add(11 * Process.pointerSize).readInt()
   }
   get cmd() {
-    console.log(this.p.readPointer().readByteArray(32))
-    return this.p.readPointer().readUtf8String()
+    return new NTStr(this.p.readPointer())
   }
   get dataSize() {
     const v4 = this.p.readPointer()
@@ -31,6 +45,35 @@ class MsfParse {
   get data() {
     const v4 = this.p.readPointer()
     const startPtr = v4.add(32).readPointer().readPointer()
+    return startPtr.readByteArray(this.dataSize)
+  }
+}
+class MsfRespData {
+  /**
+   * *v42
+   */
+  private p: NativePointer
+  constructor(p: NativePointer) {
+    this.p = p
+  }
+  get uin() {
+    return new NTStr(this.p)
+  }
+  get seq() {
+    return this.p.add(3 * Process.pointerSize).readInt()
+  }
+  get cmd() {
+    return new NTStr(this.p.add(4 * Process.pointerSize))
+  }
+  get dataSize() {
+    const v4 = this.p.add(7 * Process.pointerSize).readPointer()
+    const start = v4.readPointer()
+    const end = v4.add(Process.pointerSize).readPointer()
+    return end.sub(start).toInt32()
+  }
+  get data() {
+    const v4 = this.p.add(7 * Process.pointerSize).readPointer()
+    const startPtr = v4.readPointer()
     return startPtr.readByteArray(this.dataSize)
   }
 }
@@ -140,9 +183,9 @@ export const hookMSF = (baseAddr: BaseAddr) => {
   //   }
   // }
   {
-    const targetAddr = baseAddr.resolveAddress('0x01BD1DEE')
+    const targetAddr = baseAddr.resolveAddress('0x0189F1AC')
     if (targetAddr != null) {
-      const log = useLogger('MSF pre')
+      const log = useLogger('MSF request')
       Interceptor.attach(targetAddr, { // Intercept calls to our SetAesDecrypt function
 
         // When function is called, print out its parameters
@@ -165,15 +208,14 @@ export const hookMSF = (baseAddr: BaseAddr) => {
             log.info('a6:', args[5])
             log.info('a7:', args[6])
 
-            const cmdAndData = args[2]
-            log.info(cmdAndData.readByteArray(64))
-            const p = cmdAndData.readPointer()
-            log.info('cmd:', p.readUtf8String())
-
-            const start = p.add(32).readPointer()
-            const end = start.add(8)
-            const size = end.readPointer().sub(start.readPointer()).toInt32()
-            log.info('data:', start.readPointer().readByteArray(size))
+            const msfData = args[1].readPointer()
+            log.info(msfData.readByteArray(208))
+            const msf = new MsfReqData(msfData)
+            log.info('seq:', msf.seq)
+            log.info('uin:', msf.uin)
+            log.info('cmd:', msf.cmd)
+            log.info('dataSize:', msf.dataSize)
+            log.info('data:', msf.data)
           }
           catch (error) {
             log.info('error:', error)
@@ -199,9 +241,9 @@ export const hookMSF = (baseAddr: BaseAddr) => {
     }
   }
   {
-    const targetAddr = baseAddr.resolveAddress('0x01BD19E8')
+    const targetAddr = baseAddr.resolveAddress('0x018A0D7E')
     if (targetAddr != null) {
-      const log = useLogger('MSF')
+      const log = useLogger('MSF response')
       Interceptor.attach(targetAddr, { // Intercept calls to our SetAesDecrypt function
 
         // When function is called, print out its parameters
@@ -219,7 +261,7 @@ export const hookMSF = (baseAddr: BaseAddr) => {
             const msfData = args[1].readPointer()
             log.info(msfData.readByteArray(208))
             this.msfData = msfData
-            const msf = new MsfParse(msfData)
+            const msf = new MsfRespData(msfData)
             log.info('seq:', msf.seq)
             log.info('uin:', msf.uin)
             log.info('cmd:', msf.cmd)

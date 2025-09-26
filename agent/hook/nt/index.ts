@@ -9,7 +9,7 @@ import { hookMSF } from "./msf.js"
 import { hookSqlite3Step } from "./sqlite3_step.js"
 
 export const hookNt = (baseAddr: BaseAddr) => {
-    hookLog(baseAddr)
+    // hookLog(baseAddr)
     // hookHostsWin32(baseAddr)
     // hookDBLinux(baseAddr)
     // hookSql(baseAddr)
