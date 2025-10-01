@@ -17,11 +17,12 @@ for pid in psutil.pids():
         # QQ.exe and len(p.cmdline()) > 1
         # and len(p.cmdline()) == 1
         # 判断命令包含hosthwnd
-        if p.name() == PROCESS_NAME and len(p.cmdline()) == 1:
+        if p.name() == PROCESS_NAME:
             print(p.cmdline())
-            process_list.append(p)
-            del p
-            break
+            if len(p.cmdline()) == 1 or any('relaunch' in s for s in p.cmdline()) or any('install' in s for s in p.cmdline()):
+                process_list.append(p)
+                del p
+                break
     except Exception:
         print('error next')
 

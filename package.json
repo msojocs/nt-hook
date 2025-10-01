@@ -10,7 +10,7 @@
     "watch": "frida-compile agent/index.ts -o _agent.js -w",
     "hook-nt": "node nt.js > output.log",
     "hook-py": "python -u nt.py",
-    "hook-py-log": "python -u nt.py > output.log"
+    "hook-py-log": "python -u nt.py > tmp/output.log"
   },
   "devDependencies": {
     "@types/frida-gum": "^19.0.1",

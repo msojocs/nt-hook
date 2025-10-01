@@ -10,7 +10,7 @@ class NTStr {
     return this.p.readU8() >> 1
   }
   get data() {
-    if (this.len <= 15) {
+    if ((this.p.readU8() & 1) == 0) {
       return this.p.add(1).readUtf8String()
     } else {
       const ptr = this.p.add(2 * Process.pointerSize).readPointer()
@@ -34,6 +34,9 @@ class MsfReqData {
   }
   get cmd() {
     return new NTStr(this.p.readPointer())
+  }
+  get unknown() {
+    return this.p.add(4 * Process.pointerSize).readPointer().readByteArray(100)
   }
   get uin() {
     return new NTStr(this.p.add(7 * Process.pointerSize))
@@ -221,6 +224,7 @@ export const hookMSF = (baseAddr: BaseAddr) => {
             log.info('cmd:', msf.cmd)
             log.info('dataSize:', msf.dataSize)
             log.info('data:', msf.data)
+            log.info('unknown:', msf.unknown)
           }
           catch (error) {
             log.info('error:', error)
